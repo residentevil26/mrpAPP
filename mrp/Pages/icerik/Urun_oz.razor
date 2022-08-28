@@ -1,0 +1,120 @@
+﻿
+@using mrpAccesLibrary
+@using mrpAccesLibrary.Models
+
+@inject IUrun_oz_getir_data _db
+
+<RadzenCard class="m-3" >
+    <h3 class="h5">Ürünün Özellik Bilgileri</h3>
+     <RadzenButton Icon="add_circle_outline" style="margin-bottom: 10px;width:10%"  Click="@InsertRow" Disabled=@(orderToInsert != null) />
+    <div class="d-flex flex-row" style="height:400px;" >
+       
+    
+       <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Simple" AllowSorting="true" PageSize="5" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+        Data="@musteri" @ref="ordersGrid" TItem="urun_oz_getir" ColumnWidth="%10" LogicalFilterOperator="LogicalFilterOperator.And"  
+         RowUpdate="@OnUpdateRow" EditMode="DataGridEditMode.Single" >
+           
+        <Columns>
+            <RadzenDataGridColumn  Context="order" TItem="urun_oz_getir" Visible="false"  Property="kart_ozid" Filterable="false" Title="ID" Frozen="true" Width="10%" TextAlign="TextAlign.Center" />
+            <RadzenDataGridColumn  TItem="urun_oz_getir" Property="urun_oz_deger" Title="Özellik Adı" Sortable="true" Filterable="true" Width="40%" >
+               <EditTemplate Context="order">
+                <RadzenDropDown  AllowClear="true" TValue="int" Class="w-100" 
+                               @bind-Value="order.urun_ozellikid" Data= "Tip"
+                                TextProperty="urun_oz_deger" ValueProperty="urun_ozellikid"  >
+                               
+                                </RadzenDropDown>
+            </EditTemplate> 
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="urun_oz_getir" Property="urun_kart_ozellik_deger" Title="Değeri"   Sortable="true" Filterable="true" Width="20%" >
+              <EditTemplate Context="order">
+                 <RadzenTextBox Name="txturunkodu" @bind-Value="order.urun_kart_ozellik_deger" Class="w-100"  />
+            </EditTemplate >
+                </RadzenDataGridColumn>
+                 <RadzenDataGridColumn TItem="urun_oz_getir" Context="sampleBlazorModelsSampleOrder" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="30%">
+                <Template Context="order">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditRow(order))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="order">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@((args) => SaveRow(order))">
+                    </RadzenButton>
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@((args) => CancelEdit(order))">
+                    </RadzenButton>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+
+        
+    </div>
+</RadzenCard>
+
+@code {
+
+    private List<urun_oz_getir> musteri;
+    private List<urun_oz_getir> Tip;
+    RadzenDataGrid<urun_oz_getir> ordersGrid;
+    urun_oz_getir orderToInsert;
+    [Parameter]
+    public int urunid { get; set; } = 1;
+
+
+    void Change(string text)
+    {
+
+    }
+    string emptyText = "No Items to display!";
+    protected override async Task OnInitializedAsync() 
+    {
+
+        musteri = await _db.urunleri_getir(urunid);
+        Tip = await _db.urunleri_getir();
+
+
+
+    }
+    async Task EditRow(urun_oz_getir order)
+    {
+        await ordersGrid.EditRow(order);
+
+    }
+    async Task SaveRow(urun_oz_getir order)
+    {
+        if (order == orderToInsert)
+        {
+            await _db.urun_ozellik_kaydet(orderToInsert,urunid);
+            orderToInsert = null;
+        }
+        else
+        {
+            await _db.urun_ozellik_guncel(order, order.kart_ozid);
+        }
+        musteri = await _db.urunleri_getir(urunid);
+        Tip = await _db.urunleri_getir();
+        ordersGrid.CancelEditRow(order);
+    }
+     async Task CancelEdit(urun_oz_getir order)
+    {
+         if (order == orderToInsert)
+        {
+            orderToInsert = null;
+        }
+        musteri = await _db.urunleri_getir(urunid);
+
+        ordersGrid.CancelEditRow(order);
+    }
+    void OnUpdateRow(urun_oz_getir order)
+    {
+        if (order == orderToInsert)
+        {
+            orderToInsert = null;
+        }
+
+        
+    }
+      async Task InsertRow()
+    {
+        orderToInsert = new urun_oz_getir();
+        await ordersGrid.InsertRow(orderToInsert);
+    }
+}

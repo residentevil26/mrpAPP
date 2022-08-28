@@ -1,0 +1,225 @@
+﻿@using mrpAccesLibrary
+@using mrpAccesLibrary.Models
+
+@inject ITedarikci_urun_getir_data _dbt
+@inject IUrun_kart_data _dbu
+@inject NotificationService NotificationService
+<RadzenCard class="m-3" >
+    <h3 class="h5">Tedarikçi Bilgileri</h3>
+    <RadzenButton Icon="add_circle_outline" style="margin-bottom: 10px;width:10%"  Click="@InsertRow" Disabled=@(orderToInsert != null) />
+       
+    <div class="d-flex flex-row">
+         
+         <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="5" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+        Data="@tedarikci"  @ref="ordersGrid" TItem="tedarikci_urun_getir" ColumnWidth="%10" LogicalFilterOperator="LogicalFilterOperator.Or"  
+        SelectionMode="DataGridSelectionMode.Single" RowUpdate="@OnUpdateRow" EditMode="DataGridEditMode.Single">
+           
+        <Columns>
+            <RadzenDataGridColumn Context="order" TItem="tedarikci_urun_getir" Visible="false" Property="ted_urunid" Filterable="false" Title="ID" Frozen="true" Width="%10" TextAlign="TextAlign.Center" />
+            
+            <RadzenDataGridColumn  TItem="tedarikci_urun_getir" Property="ted_urunadi" Title="Ürün Adı" Sortable="true" Filterable="true" Width="%25" >
+            <EditTemplate Context="order">
+                 <RadzenTextBox Name="txturun" @bind-Value="order.ted_urunadi"  Class="w-500" Style="width:200px" />
+            </EditTemplate>
+            </RadzenDataGridColumn>  
+            <RadzenDataGridColumn TItem="tedarikci_urun_getir" Property="ted_urunkodu" Title="Ürün kodu"   Sortable="true" Filterable="true" Width="%20" >
+                <EditTemplate Context="order">
+                 <RadzenTextBox Name="Txturunkodu1" @bind-Value="order.ted_urunkodu" Class="w-500" Style="width:200px"  />
+               
+             </EditTemplate >
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="tedarikci_urun_getir" Property="tedadi" Title="Tedarikçi Adı"   Sortable="true" Filterable="true" Width="%25" >
+            <EditTemplate Context="order">
+                <RadzenDropDown  AllowClear="true" TValue="int" Class="w-500" 
+                               @bind-Value="order.tedid" Data= "Tip"
+                                TextProperty="tedadi" ValueProperty="tedid" Style="width:200px" >
+                </RadzenDropDown>
+            </EditTemplate>    
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="tedarikci_urun_getir" Context="sampleBlazorModelsSampleOrder" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="30%">
+                <Template Context="order">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditRow(order))"  >
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="order">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@((args) => SaveRow(order))">
+                    </RadzenButton>
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@((args) => CancelEdit(order))">
+                    </RadzenButton>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+
+                   
+        </Columns>
+    </RadzenDataGrid>
+
+    </div>
+    
+</RadzenCard>
+
+@code {
+
+
+    private List<tedarikci_urun_getir> tedarikci;
+    private List<tedarikci_urun_getir> kontrol_kod;
+    private List<tedarikci_urun_getir> kontrol_isim;
+    RadzenDataGrid<tedarikci_urun_getir> ordersGrid;
+    tedarikci_urun_getir orderToInsert;
+    private List<tedarikci_getir> Tip;
+    [Parameter]
+    public int urunid { get; set; } = 1;
+    NotificationMessage? message;
+    [CascadingParameter]
+    public Urun_ayrinti Layout { get; set; }
+    void Change(string text)
+    {
+
+    }
+    string emptyText = "No Items to display!";
+    protected override async Task OnInitializedAsync() 
+    {
+
+        tedarikci = await _dbt.Ted_urun_getir(urunid);
+
+        Tip = await _dbt.Ted_getir();
+
+
+
+    }
+    async Task EditRow(tedarikci_urun_getir order)
+    {
+        await ordersGrid.EditRow(order);
+
+    }
+
+    async Task SaveRow(tedarikci_urun_getir order)
+    {
+
+
+        if (order.ted_urunkodu == string.Empty || order.ted_urunadi == string.Empty || order.tedid == 0)
+        {
+              Layout.ShowNotification(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Boş", Detail = "Tedarikçi Bilgileri Boş Olamaz ", Duration = 4000 });
+              
+            CancelEdit(order);
+        }
+        else
+        {
+            kontrol_isim =await _dbt.Ted_urun_getir_isim(order);
+            kontrol_kod = await _dbt.Ted_urun_getir_kod(order);
+
+            if (kontrol_isim.Count==0 && kontrol_kod.Count==0)
+            {
+                kaydet(order);
+            }
+            else if (kontrol_isim.Count==0 || kontrol_kod.Count==0)
+            {
+                if (kontrol_isim.Count > 0)
+                {
+                    if (kontrol_isim[0].urunid==urunid)
+                    {
+                        kaydet(order);
+                    }
+                    else
+                    {
+                        hata(order);
+                    }
+                }
+                else if (kontrol_kod.Count > 0)
+                {
+                    if (kontrol_kod[0].urunid==urunid)
+                    {
+                        kaydet(order);
+                    }
+                    else
+                    {
+                        hata(order);
+                    }
+                }
+            }
+            else if (kontrol_isim.Count>=1  && kontrol_kod.Count>=1)
+            {
+                hata(order);
+
+            }
+
+
+        }
+
+       
+        
+    }
+    async Task hata(tedarikci_urun_getir order)
+    {
+                
+                Layout.ShowNotification(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Hata", Detail = "Bu Tedarikçinin bu ürün Koduyla ve ya Adıyla Bir Ürünü Var ", Duration = 4000 });
+                 orderToInsert = null;
+        tedarikci = await _dbt.Ted_urun_getir(urunid);
+        ordersGrid.CancelEditRow(order);
+    }
+
+    async Task  kaydet(tedarikci_urun_getir order)
+    {
+        if (order == orderToInsert)
+            {
+                
+                    urunid = urunid;
+                    await _dbt.ted_urun_kaydet(orderToInsert, urunid);
+                    orderToInsert = null;
+                    message = new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Başarı", Detail = " Ürün Başarıyla Kaydedildi", Duration = 4000 };
+                    Layout.ShowNotification(message);
+
+
+                
+               
+                    
+                
+
+            }
+            else
+            {
+               
+                    orderToInsert = null;
+                    await _dbt.ted_guncelle(order, order.ted_urunid);
+                    message = new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Başarı", Detail = " Ürün Başarıyla Kaydedildi", Duration = 5000 };
+                    Layout.ShowNotification(message);
+                
+                
+                
+
+            }
+
+        orderToInsert = null;
+        tedarikci = await _dbt.Ted_urun_getir(urunid);
+        ordersGrid.CancelEditRow(order);
+    }
+    async Task DeleteRow(tedarikci_urun_getir order)
+    {
+
+    }
+    async Task CancelEdit(tedarikci_urun_getir order)
+    {
+        if (order == orderToInsert)
+        {
+            orderToInsert = null;
+        }
+        tedarikci = await _dbt.Ted_urun_getir(urunid);
+
+        ordersGrid.CancelEditRow(order);
+    }
+    void OnUpdateRow(tedarikci_urun_getir order)
+    {
+
+        if (order == orderToInsert)
+        {
+            orderToInsert = null;
+        }
+
+    }
+    async Task InsertRow()
+    {
+       
+        orderToInsert = new tedarikci_urun_getir();
+        await ordersGrid.InsertRow(orderToInsert);
+    }
+    
+}

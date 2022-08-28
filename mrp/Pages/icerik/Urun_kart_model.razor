@@ -1,0 +1,55 @@
+﻿@page "/urun_kart"
+
+
+@using Radzen
+@using mrpAccesLibrary
+@using mrpAccesLibrary.Models
+
+@inject IUrun_kart_data _db
+      @if (Secilen_Uruns ==null)
+      {
+          <Urun_kart_menu urun_id="0"/>
+      }
+      else
+      {
+          <Urun_kart_menu urun_id=@Secilen_Uruns[0].urunid/>
+      }
+<RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Simple" AllowSorting="true" PageSize="5" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+        Data="@Uruns" TItem="Urun_kart" ColumnWidth="50%" LogicalFilterOperator="LogicalFilterOperator.And"  
+        SelectionMode="DataGridSelectionMode.Single" @bind-Value=@Secilen_Uruns>
+         
+        <Columns>
+            <RadzenDataGridColumn TItem="Urun_kart" Visible="false" Property="urunid" Filterable="false" Title="ID" Frozen="true" Width="%10" TextAlign="TextAlign.Center" />
+            <RadzenDataGridColumn TItem="Urun_kart" Property="urun_adi" Title="Ürün Adı" Sortable="true" Filterable="true" Width="20%" >
+               
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Urun_kart" Property="urun_kodu" Title="Ürün kodu"   Sortable="true" Filterable="true" Width="10%%" />
+            <RadzenDataGridColumn TItem="Urun_kart" Property="tedadi" Title="Tedarikçi Adı"   Sortable="true" Filterable="true" Width="20%" />
+            <RadzenDataGridColumn TItem="Urun_kart" Property="ted_urunkodu" Title="Tedarikçi Ürün Kodu "  Sortable="true" Filterable="true" Frozen="true" Width="10%" />
+            <RadzenDataGridColumn TItem="Urun_kart" Property="musadi" Title="Müşteri Adı"   Sortable="true" Filterable="true" Width="20%" />
+            <RadzenDataGridColumn TItem="Urun_kart" Property="mus_urunkodu" Title="Müşteri Ürün Kodu" Frozen="true"  Sortable="true" Filterable="true" Width="10%" />
+            <RadzenDataGridColumn TItem="Urun_kart" Property="urun_tip_adi" Title="Tip Adı"  Sortable="true" Filterable="true" Width="10%"/>            
+        </Columns>
+    </RadzenDataGrid>
+@code {
+    private List<Urun_kart> Uruns;
+    private IList<Urun_kart> Secilen_Uruns;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Uruns = await _db.urunleri_getir();
+        Secilen_Uruns = Uruns.Take(1).ToList();
+    }
+
+    
+    
+   
+    
+
+
+
+
+
+
+
+}

@@ -1,0 +1,48 @@
+﻿@page "/musterigetir"
+@inject Radzen.DialogService dialogService
+<CascadingValue Value="this">
+<RadzenPanel AllowCollapse="true"  >
+    <HeaderTemplate>
+        <h4 class="m-0 d-flex align-items-center">
+                <RadzenIcon Icon="account_box" Class="mr-1" /><b>Müşteri Bilgileri</b>
+            </h4>
+    </HeaderTemplate>
+    <ChildContent>
+        <Mus_ted_bilgi musid=@musid></Mus_ted_bilgi>
+
+</ChildContent>
+   
+</RadzenPanel>
+<RadzenPanel AllowCollapse="true"Collapsed=true>
+    <HeaderTemplate>
+        <h4 class="m-0 d-flex align-items-center">
+                <RadzenIcon Icon="account_box" Class="mr-1" /><b>Adres Bilgileri</b>
+            </h4>
+    </HeaderTemplate>
+    <ChildContent>
+  <Musteri_iletisim musid=@musid></Musteri_iletisim>
+</ChildContent>
+</RadzenPanel>
+<RadzenPanel AllowCollapse="true" Collapsed=true>
+    <HeaderTemplate>
+        <h4 class="m-0 d-flex align-items-center">
+                <RadzenIcon Icon="account_box" Class="mr-1" /><b>İleteşim Bilgileri</b>
+            </h4>
+    </HeaderTemplate>
+    <ChildContent>
+        <Mus_ilet_getir musid=@musid></Mus_ilet_getir>
+</ChildContent>
+</RadzenPanel>
+
+
+  <RadzenNotification ></RadzenNotification>
+  
+ </CascadingValue>
+
+@code 
+{
+    [Parameter]
+    public int musid{ get; set; }
+
+   
+}

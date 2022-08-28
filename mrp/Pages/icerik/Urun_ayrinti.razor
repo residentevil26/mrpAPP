@@ -1,0 +1,133 @@
+﻿@page "/urun_ayrinti/{urunid:int}"
+@using mrpAccesLibrary
+@using mrpAccesLibrary.Models
+@using mrp.models
+@using mrp.Controllers
+@using System.Security.Claims
+@inject IUrun_kart_data _dbu
+@inject NotificationService NotificationService
+@inject Blazored.LocalStorage.ILocalStorageService localStorageService
+@inject IAuthorizationService authorizationService
+ @inject AuthenticationStateProvider Auth1
+
+   <CascadingValue Value="this">
+<RadzenPanel AllowCollapse="true"  >
+    <HeaderTemplate>
+        <h4 class="m-0 d-flex align-items-center">
+                <RadzenIcon Icon="account_box" Class="mr-1" /><b>Ürün Bilgileri</b>
+            </h4>
+    </HeaderTemplate>
+    <ChildContent>
+<Urun_bilgi urunid=@this.urunid1 urunadi=@urunadi Uruntip=@Uruntip urunkodu=@urunkodu ></Urun_bilgi>
+
+</ChildContent>
+   
+</RadzenPanel>
+<RadzenPanel AllowCollapse="true"Collapsed=true>
+    <HeaderTemplate>
+        <h4 class="m-0 d-flex align-items-center">
+                <RadzenIcon Icon="account_box" Class="mr-1" /><b>Tedarikçi Bilgileri</b>
+            </h4>
+    </HeaderTemplate>
+    <ChildContent>
+  <div style="width:100%;float: left;height:500px;"class="d-flex flex-row">
+        <Urun_tedarikci urunid=@urunid1 ></Urun_tedarikci>
+</div>
+</ChildContent>
+</RadzenPanel>
+<RadzenPanel AllowCollapse="true" Collapsed=true>
+    <HeaderTemplate>
+        <h4 class="m-0 d-flex align-items-center">
+                <RadzenIcon Icon="account_box" Class="mr-1" /><b>Müşteri Bilgileri</b>
+            </h4>
+    </HeaderTemplate>
+    <ChildContent>
+<div style="width:100%;float: left;height:500px"class="d-flex flex-row">
+   <Urun_musteri urunid=@urunid1></Urun_musteri>
+</div>
+</ChildContent>
+</RadzenPanel>
+<RadzenPanel AllowCollapse="true" Collapsed=true>
+    <HeaderTemplate>
+        <h4 class="m-0 d-flex align-items-center">
+                <RadzenIcon Icon="account_box" Class="mr-1" /><b>Ürününün Özellik Bilgileri</b>
+            </h4>
+    </HeaderTemplate>
+    <ChildContent>
+  <div style="width:100%;float: left;height:600px; display:@display;" >
+   <Urun_oz urunid=@urunid1 ></Urun_oz>
+</div>
+</ChildContent>
+</RadzenPanel>
+<RadzenPanel AllowCollapse="true" Collapsed=true>
+    <HeaderTemplate>
+        <h4 class="m-0 d-flex align-items-center">
+                <RadzenIcon Icon="account_box" Class="mr-1" /><b>İş Akış ve Kalite Kontrol Bilgileri</b>
+            </h4>
+    </HeaderTemplate>
+    <ChildContent>
+<div style="width:100%;float: left;height:500px;"class="d-flex flex-row">
+   <Is_akisi urunid=@this.urunid1></Is_akisi>
+</div>
+</ChildContent>
+</RadzenPanel>
+  <RadzenNotification ></RadzenNotification>
+ </CascadingValue>
+
+  
+    
+
+@code {
+
+    [Parameter]
+    public int urunid { get; set; } = 0;
+
+    public int urunid1 = 0;
+
+    int Uruntip;
+    string urunadi="";
+    string urunkodu="";
+    bool disabled;
+    bool visible;
+
+    [Parameter]
+    public string display { get; set; } = "block";
+
+    [CascadingParameter]
+    public MainLayout Layout { get; set; }
+
+    
+    void Change(string text)
+    {
+
+    }
+
+    protected override async void OnInitialized()
+
+    {
+        
+
+            this.urunid1 = urunid;
+         
+    }
+
+
+
+
+
+   
+
+
+    public void ShowNotification(NotificationMessage message)
+    {
+        NotificationService.Notify(message);
+
+        Console.WriteLine($"{message.Severity} notification");
+
+    }
+   
+
+    
+    
+    
+}

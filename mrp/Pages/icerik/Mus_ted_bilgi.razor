@@ -1,0 +1,130 @@
+﻿@using mrpAccesLibrary
+@using mrpAccesLibrary.Models
+@using mrp.models
+@inject IMusteri _db
+        <div style="width:50%;float: left;height:400px">
+        <RadzenCard class="m-3" >
+    
+    <div >
+        <RadzenImage Path="no-image.jpg" Class="rounded-circle float-left mr-3" Style="width:60%;"  />
+       
+    </div>
+    
+</RadzenCard>
+</div>
+<div style="width:50%;float: left;height:400px">
+   <RadzenCard class="m-3" >
+    <h3 class="h5">Künye Bilgileri</h3>
+    <div > 
+        <EditForm Model="@musteri" OnValidSubmit ="kaydet" >
+            <DataAnnotationsValidator/>
+            <ValidationSummary/>
+        <div class="d-flex flex-row" > 
+        <RadzenLabel Text="Müşteri Adı:" Component="txturun"  /> 
+         <RadzenTextBox Name="txturun" Class="w-100" style="margin:10px;padding:10px;height=10px;" @bind-Value=@musteri.musadi Disabled=@disabled />
+         </div>
+         <div class="d-flex flex-row">
+         <RadzenLabel Text="Vergino:" Component="txturunkod"  /> 
+           <RadzenMask Mask="**********" CharacterPattern="[0-9]" Placeholder="0000000000" Name="vergi_no"  style="margin:10px;padding:10px;height=10px;" @bind-Value=@musteri.mus_vergi_no Disabled=@disabled/>
+         </div>
+         <div class="d-flex flex-row">
+       
+     </div>
+     
+        
+         <RadzenButton Icon="update" style="margin-bottom: 10px;margin-top:10px;margin-left:5px;" Text="Güncelle" Visible=@disabled Click=@guncelle />
+         <RadzenButton Icon="save_as" style="margin-bottom: 10px;margin-top:10px;margin-left:5px;" Text="Kaydet" Visible=@visible  ButtonType="ButtonType.Submit" />
+         <RadzenButton Icon="cancel" style="margin-bottom: 10px;margin-top:10px;margin-left:5px;" Text="İptal"  ButtonStyle="ButtonStyle.Danger" Visible=@visible Click=@iptal/>
+         </EditForm>
+    
+    </div>
+</RadzenCard>
+</div>
+@code {
+    private bool disabled;
+    private bool visible;
+    [Parameter]
+    public int musid { get; set;}  = 0;
+
+    private List<musteri_getir> mus_bilgi;
+
+    private musteri musteri=new musteri();
+    [CascadingParameter]
+    public Musteri Layout { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (musid!=0)
+        {
+            await bilgi_getir();
+        }
+        else
+        {
+            disabled = false;
+            visible = true;
+        }
+        await base.OnParametersSetAsync();
+    }
+    public void guncelle()
+    {
+        disabled = false;
+        visible = true;
+    }
+    public async Task iptal()
+    {
+        if (musid!=0)
+        {
+            await bilgi_getir();
+
+        }
+    }
+    public async Task kaydet()
+    {
+        musteri_getir mus_kayit = new musteri_getir()
+            {
+                musadi = musteri.musadi,
+                mus_vergino = musteri.mus_vergi_no
+
+    }; 
+
+        if (musid!=0)
+        {
+            await _db.mus_guncelle(mus_kayit, musid);
+            await bilgi_getir();
+            Layout.musteri = await _db.mus_getir();
+        }
+        else if (musid == 0)
+        {
+            await _db.mus_kaydet(mus_kayit);
+
+        }
+
+    }
+
+    public async Task bilgi_getir()
+    {
+        if (musid!=0)
+        {
+            mus_bilgi= await _db.mus_getir(musid);
+            musteri.musadi = mus_bilgi[0].musadi;
+            musteri.mus_vergi_no = mus_bilgi[0].mus_vergino;
+            disabled = true;
+            visible = false;
+
+        }
+        else if (musid == 0)
+        {
+            mus_bilgi= await _db.mus_getir(musteri.musadi);
+            musteri.musadi = mus_bilgi[0].musadi;
+            musteri.mus_vergi_no = mus_bilgi[0].mus_vergino;
+            musid = musteri.musid;
+            disabled = true;
+            visible = false;
+        }
+
+    }
+
+}
+
+
+

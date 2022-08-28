@@ -1,0 +1,18 @@
+﻿@inject NavigationManager NavigationManager
+
+   <RadzenButton Icon="add_circle_outline" style="margin-bottom: 10px" Text="Ürün Bilgileri" Click="@ozellik"/>
+   
+
+@code 
+{
+    [Parameter]
+    public int urun_id { get; set; } = 1;
+    [CascadingParameter]
+    public MainLayout Layout { get; set; }
+    private void ozellik()
+    {
+       
+        NavigationManager.NavigateTo("urun_ayrinti/"+urun_id);
+    }
+
+}

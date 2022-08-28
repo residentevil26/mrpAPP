@@ -1,0 +1,201 @@
+﻿@using mrpAccesLibrary
+@using mrpAccesLibrary.Models
+@using mrp.models
+
+@inject IUrun_kart_data _dbu
+
+    
+        <div style="width:50%;float: left;height:400px">
+        <RadzenCard class="m-3" >
+    
+    <div >
+        <RadzenImage Path="no-image.jpg" Class="rounded-circle float-left mr-3" Style="width:60%;"  />
+       
+    </div>
+    
+</RadzenCard>
+</div>
+<div style="width:50%;float: left;height:400px">
+   <RadzenCard class="m-3" >
+    <h3 class="h5">Künye Bilgileri</h3>
+    <div > 
+        <EditForm Model="@Urun_guncel" OnValidSubmit="guncel">
+            <DataAnnotationsValidator/>
+            <ValidationSummary/>
+        <div class="d-flex flex-row" > 
+        <RadzenLabel Text="Ürün Adı:" Component="txturun"  /> 
+         <RadzenTextBox Name="txturun" Disabled=@disabled Class="w-100" style="margin:10px;padding:10px;height=10px;" @bind-Value=@Urun_guncel.urun_adi Change=@OnChange/>
+         </div>
+         <div class="d-flex flex-row">
+         <RadzenLabel Text="Ürün Kodu:" Component="txturunkod"  /> 
+         <RadzenTextBox Name="txturunkod" Disabled=@disabled Class="w-100" style="margin:10px;padding:10px;height=10px;"  @bind-Value=@Urun_guncel.urun_kodu Change=@OnChange />
+         </div>
+         <div class="d-flex flex-row">
+         <RadzenLabel Text="Ürün Tipi:" Component="txturuntip" /> 
+         <RadzenDropDown Disabled=@disabled AllowClear="true" TValue="int" Class="w-100" 
+                                Data= "Tip"
+                                TextProperty="urun_tip_adi" ValueProperty="urun_tipid" @bind-Value=@Urun_guncel.urun_tipid />
+     </div>
+     <RadzenTextBox  Visible=false Class="w-100" style="margin:10px;padding:10px;height=10px;"  @bind-Value=@Urun_guncel.ad_kod   />
+        
+         <RadzenButton Icon="update" style="margin-bottom: 10px;margin-top:10px;margin-left:5px;" Text="Güncelle" Click=@guncelle Visible=@disabled  />
+         <RadzenButton Icon="save_as" style="margin-bottom: 10px;margin-top:10px;margin-left:5px;" Text="Kaydet" Visible=@visible ButtonType="ButtonType.Submit"  />
+         <RadzenButton Icon="cancel" style="margin-bottom: 10px;margin-top:10px;margin-left:5px;" Text="İptal" Click=@iptal Visible=@visible  ButtonStyle="ButtonStyle.Danger" />
+         </EditForm>
+    
+    </div>
+</RadzenCard>
+</div>
+ 
+
+@code {
+    [Parameter]
+    public int urunid { get; set;}  = 0;
+    private List<Urun_kart> Uruns;
+    private List<urun_tip> Tip;
+    NotificationMessage? message;
+    [CascadingParameter]
+    public Urun_ayrinti Layout { get; set; }
+
+    [Parameter]
+    public int Uruntip { get; set;}  = 0;
+
+    [Parameter]
+    public string urunadi{ get; set;}  = "";
+
+    [Parameter]
+    public string urunkodu{ get; set;}  = "";
+
+    [Parameter]
+    public bool disabled { get; set;}
+
+    [Parameter]
+    public bool visible{ get; set;}
+
+
+    public Uruns_kart_ana Urun_guncel = new Uruns_kart_ana();
+
+    void OnChange(string value)
+    {
+        if (urunid==0)
+        {
+            Urun_guncel.ad_kod = Urun_guncel.urun_kodu +"?"+ Urun_guncel.urun_adi+"?kaydet";
+        }
+        else
+        {
+            Urun_guncel.ad_kod = Urun_guncel.urun_kodu +"?"+ Urun_guncel.urun_adi+"?guncel";
+        }
+
+
+    }
+
+
+    public  void kart_bilgi_getir()
+    {
+        if (Uruns.Count==0)
+        {
+            Uruntip = 0;
+            urunadi = "boş";
+            urunkodu = "boş";
+        }
+        else
+        {
+            Uruntip = Uruns[0].urun_tipid;
+            urunadi = Uruns[0].urun_adi;
+
+            urunkodu = Uruns[0].urun_kodu;
+            Urun_guncel.urun_kodu = urunkodu;
+            Urun_guncel.urun_adi = urunadi;
+            Urun_guncel.urun_tipid = Uruntip;
+
+            if (urunid==0)
+            {
+                Urun_guncel.ad_kod = Urun_guncel.urun_kodu +"?"+ Urun_guncel.urun_adi+"?kaydet";
+            }
+            else
+            {
+                 Urun_guncel.ad_kod = Urun_guncel.urun_kodu +"?"+ Urun_guncel.urun_adi+"?guncel";
+            }
+
+        }
+    }
+    string emptyText = "No Items to display!";
+
+
+    protected override async Task OnInitializedAsync() 
+    {
+
+        if(urunid!=0)
+        {
+
+            disabled = true;
+            visible = false;
+            Tip = await _dbu.urun_tip_getir();
+            Uruns = await  _dbu.urunleri_getir(urunid);
+            kart_bilgi_getir();
+
+        }
+        else
+        {
+            disabled=false;
+            visible = true;
+            Uruns = await  _dbu.urunleri_getir(urunid);
+            kart_bilgi_getir();
+            Tip = await _dbu.urun_tip_getir();
+
+        }
+
+
+
+
+
+
+    }
+    
+
+
+
+    private void guncelle()
+    {
+
+        visible = true;
+        disabled = false;
+    }
+    private void iptal()
+    {
+
+        visible = false;
+        disabled = true;
+        kart_bilgi_getir();
+    }
+    private async Task guncel()
+    {
+        urun_kart_ana u = new urun_kart_ana()
+            {
+                urun_adi = Urun_guncel.urun_adi,
+                urun_kodu = Urun_guncel.urun_kodu,
+                urun_tipid = Urun_guncel.urun_tipid
+            };
+        if (urunid!=0)
+        {
+            await _dbu.kart_guncelle(u, urunid);
+            Uruns = await  _dbu.urunleri_getir(urunid);
+        }
+        else
+        {
+            await _dbu.kart_kaydet(u);
+            Uruns = await _dbu.urunleri_getir(u.urun_kodu);
+            urunid = Uruns[0].urunid;
+            Layout.urunid1 = urunid;
+
+        }     
+        await _dbu.kart_guncelle(u, urunid);
+        Uruns = await  _dbu.urunleri_getir(urunid);
+        Tip = await _dbu.urun_tip_getir();
+        kart_bilgi_getir();
+         disabled = true;
+         visible = false;
+          message = new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Başarı", Detail = " Ürün Başarıyla Kaydedildi", Duration = 4000 };
+                    Layout.ShowNotification(message);
+    }
+}

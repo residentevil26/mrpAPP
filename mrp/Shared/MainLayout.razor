@@ -1,0 +1,48 @@
+﻿@inherits LayoutComponentBase
+
+<PageTitle>mrp</PageTitle>
+<CascadingValue Value="this">
+<div class="page">
+   
+    <div class="sidebar">
+        
+         <RadzenPanelMenu Style="width:100%;height:100%" Visible=@disabled>
+        <Menu />
+   </RadzenPanelMenu>
+    </div>
+
+    <main>
+        <div class="top-row px-4" >
+            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+        </div>
+
+        <article class="content px-4"  >
+            
+            @Body
+        </article>
+    </main>
+</div>
+</CascadingValue>
+@code
+{
+    public bool disabled { get; set; } = true; 
+    protected override void OnInitialized()
+
+    {
+       
+
+    }
+
+    private void disable()
+    {
+        if (disabled == true)
+        {
+            
+            this.disabled=true;
+        }
+        else
+        {
+            this.disabled = false;
+        }
+    }
+}

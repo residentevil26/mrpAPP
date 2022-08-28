@@ -1,0 +1,47 @@
+﻿@inject NavigationManager NavigationManager
+<div class="top-row ps-3 navbar navbar-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">mrp</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu" style="background-color:white;">
+            <span class="navbar-toggler-icon" style="background-color:white;"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+     
+            <RadzenPanelMenuItem Text="Ürün İşlemleri" Icon="important_devices">
+                <RadzenPanelMenuItem Text="Ürün Kartları" Path="urun_kart" Icon="wysiwyg"></RadzenPanelMenuItem>
+                 <RadzenPanelMenuItem Text="Ürün Kartı Eklme" Path="urun_ayrinti/0"  ></RadzenPanelMenuItem>
+            </RadzenPanelMenuItem>
+            <RadzenPanelMenuItem Text="Müşteri İşlemleri" Icon="payment">
+                <RadzenPanelMenuItem Text="Müşteri Bilgileri"  Icon="check_circle" Path="musteri" ></RadzenPanelMenuItem>
+                <RadzenPanelMenuItem Text="Müşteri Ekle"   Path="mus_ekle" ></RadzenPanelMenuItem>
+            </RadzenPanelMenuItem>
+            <RadzenPanelMenuItem Text="Data" Icon="save">
+                <RadzenPanelMenuItem Text="DataGrid" Path="datagrid" Icon="grid_on"></RadzenPanelMenuItem>
+               
+            </RadzenPanelMenuItem>
+            <RadzenPanelMenuItem Text="Containers" Icon="account_box">
+                <RadzenPanelMenuItem Text="Tabs" Path="tabs" Icon="tab"></RadzenPanelMenuItem>
+                
+            </RadzenPanelMenuItem>
+           
+   
+</div>
+
+@code {
+    private bool collapseNavMenu = false;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+     private void git()
+    {
+       
+        NavigationManager.NavigateTo("urun_ayrinti/0");
+    }
+}

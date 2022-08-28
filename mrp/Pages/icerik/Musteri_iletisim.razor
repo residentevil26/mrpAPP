@@ -1,0 +1,145 @@
+﻿
+@using mrpAccesLibrary
+@using mrpAccesLibrary.Models
+@using mrp.models
+@inject IMusteri _db
+<RadzenCard class="m-3" >
+     <RadzenButton Icon="add_circle_outline" style="margin-bottom: 10px;width:10%"  Click="@InsertRow" Disabled=@(orderToInsert != null) />
+<div class="d-flex flex-row" style="height:400px;" >
+<RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Simple" AllowSorting="true" PageSize="5" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+        Data="@musteri" TItem="mus_adres" @ref="ordersGrid" ColumnWidth="10%" LogicalFilterOperator="LogicalFilterOperator.And" EditMode="DataGridEditMode.Single">
+     <Columns>
+        <RadzenDataGridColumn Context="order" TItem="mus_adres" Visible="false" Property="mus_adres_id" Filterable="false" Title="ID" Frozen="true" Width="%10" TextAlign="TextAlign.Center" />  
+
+        <RadzenDataGridColumn  TItem="mus_adres"  Property="musadi" Filterable="true" Title="Müşteri Adı" TextAlign="TextAlign.Center" >  
+         
+            </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="mus_adres"  Property="il_adi" Filterable="true" Title="İl Adı"  TextAlign="TextAlign.Center" >  
+        <EditTemplate Context="order">
+            <RadzenDropDown  AllowClear="true" TValue="int" Class="w-100" 
+                               @bind-Value="order.ilid" Data="iller"
+                                TextProperty="il_adi" ValueProperty="ilid" Change="@((args) => il(order))"  >
+                                
+                                </RadzenDropDown>
+        </EditTemplate>
+        </RadzenDataGridColumn>        
+        <RadzenDataGridColumn  TItem="mus_adres"  Property="ilce_adi" Filterable="true" Title="İlçe Adı"  TextAlign="TextAlign.Center" >
+             <EditTemplate Context="order">
+            <RadzenDropDown  AllowClear="true" TValue="int" Class="w-100" 
+                               @bind-Value="order.ilceid" Data="ilceler"
+                                TextProperty="ilce_adi" ValueProperty="ilceid" Change="@((args) => ilce(order))" >
+                               
+                                </RadzenDropDown>
+        </EditTemplate>
+        </RadzenDataGridColumn>
+            
+        <RadzenDataGridColumn  TItem="mus_adres"  Property="semt_adi" Filterable="true" Title="Semt Adı"  TextAlign="TextAlign.Center" >  
+             <EditTemplate Context="order">
+            <RadzenDropDown  AllowClear="true" TValue="int" Class="w-100" 
+                               @bind-Value="order.semtid" Data="semtler"
+                                TextProperty="semt_adi" ValueProperty="semtid" Change="@((args) => semt(order))" >
+                               
+                                </RadzenDropDown>
+        </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn  TItem="mus_adres"  Property="mahalle_adi" Filterable="true" Title="Mahalle Adı"  TextAlign="TextAlign.Center" >
+             <EditTemplate Context="order">
+            <RadzenDropDown  AllowClear="true" TValue="int" Class="w-100" 
+                               @bind-Value="order.mahalleid" Data="mahalleler"
+                                TextProperty="mahalle_adi" ValueProperty="mahalleid"  >
+                               
+                                </RadzenDropDown>
+        </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Context="order" TItem="mus_adres"  Property="adres" Filterable="true" Title="Adresi"   TextAlign="TextAlign.Center" >
+        <EditTemplate Context="order">
+             <RadzenTextArea @bind-Value="order.adres" Cols="30" Rows="3"  />
+        </EditTemplate>    
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="mus_adres" Context="sampleBlazorModelsSampleOrder" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" >
+                <Template Context="order">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditRow(order))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="order">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@((args) => SaveRow(order))">
+                    </RadzenButton>
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@((args) => CancelEdit(order))">
+                    </RadzenButton>
+                </EditTemplate>
+          </RadzenDataGridColumn>
+     </Columns>
+     
+     </RadzenDataGrid>
+ </div>
+ </RadzenCard>
+@code {
+    [Parameter]
+    public int musid { get; set; }
+    private List<mus_adres> musteri;
+    private List<mus_adres> iller;
+    private List<mus_adres> ilceler;
+    private List<mus_adres> semtler;
+    private List<mus_adres> mahalleler;
+    RadzenDataGrid<mus_adres> ordersGrid;
+    mus_adres orderToInsert;
+    protected override async Task OnParametersSetAsync()
+    {
+        musteri = await _db.mus_adres_getir(musid);
+        iller = await _db.ilgetir();
+
+    }
+
+    public async Task il(mus_adres order)
+    {
+        ilceler = await _db.ilcegetir(order.ilid);
+    }
+
+    public async Task ilce(mus_adres order)
+    {
+        semtler = await _db.semtgetir(order.ilceid);
+    }
+
+    public async Task semt(mus_adres order)
+    {
+        mahalleler = await _db.mahallegetir(order.semtid);
+    }
+    async Task EditRow(mus_adres order)
+    {
+        await ordersGrid.EditRow(order);
+
+    }
+    async Task SaveRow(mus_adres order)
+    {
+        if (order == orderToInsert)
+        {
+            order.musid = musid;
+            await _db.mus_adres_kaydet(order);
+            orderToInsert = null;
+
+        }
+        else
+        {
+            order.musid = musid;
+            await _db. mus_adres_guncelle (order, order.mus_adres_id);
+             
+        }
+        ordersGrid.CancelEditRow(order);
+             musteri = await _db.mus_adres_getir(musid);
+    }
+     async Task CancelEdit(mus_adres order)
+    {
+         if (order == orderToInsert)
+        {
+            orderToInsert = null;
+        }
+        musteri = await _db.mus_adres_getir(musid);
+
+        ordersGrid.CancelEditRow(order);
+    }
+      async Task InsertRow()
+    {
+        orderToInsert = new mus_adres();
+        await ordersGrid.InsertRow(orderToInsert);
+    }
+}

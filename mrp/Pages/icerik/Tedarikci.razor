@@ -1,0 +1,51 @@
+﻿@page "/tedarikci"
+@using mrpAccesLibrary
+@using mrpAccesLibrary.Models
+@using mrp.models
+@inject IMusteri _db
+@inject DialogService DialogService
+ <CascadingValue Value="this">
+ <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Simple" AllowSorting="true" PageSize="5" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+        Data="@musteri" TItem="musteri_getir" ColumnWidth="%10" LogicalFilterOperator="LogicalFilterOperator.And"  
+         @ref="ordersGrid" >
+     <Columns>
+        <RadzenDataGridColumn Context="order" TItem="musteri_getir" Visible="false" Property="musid" Filterable="false" Title="ID" Frozen="true" Width="%10" TextAlign="TextAlign.Center" />  
+        <RadzenDataGridColumn Context="order" TItem="musteri_getir"  Property="musadi" Filterable="false" Title="Müşteri Adı" Frozen="true" Width="%10" TextAlign="TextAlign.Center" />  
+        <RadzenDataGridColumn Context="order" TItem="musteri_getir"  Property="mus_vergino" Filterable="false" Title="Vergi No" Frozen="true" Width="%10" TextAlign="TextAlign.Center" />  
+        <RadzenDataGridColumn TItem="musteri_getir" Context="sampleBlazorModelsSampleOrder" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="30%">
+                <Template Context="order">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditRow(order))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+          </RadzenDataGridColumn>
+     </Columns>
+     
+     </RadzenDataGrid>
+     <RadzenDialog   ></RadzenDialog>
+     </CascadingValue>
+@code {
+    public List<musteri_getir> musteri;
+    public int i { get; set; } = 0;
+    RadzenDataGrid<musteri_getir> ordersGrid;
+    public   async Task EditRow(musteri_getir order)
+    {
+
+        await DialogService.OpenAsync<Mus_ted_ekle>($"Musteri {order.musadi}",
+               new Dictionary<string, object>() { { "musid", order.musid } },
+               new DialogOptions() { Width = "70%", Height = "100%", Resizable = true, Draggable = false,ShowClose=true,Left="2%",Style="align:center;" });
+
+    }
+    protected  override async Task OnParametersSetAsync()
+    {
+        musteri = await _db.mus_getir();
+
+
+
+
+    }
+    
+
+
+    
+   
+}

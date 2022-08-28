@@ -1,0 +1,99 @@
+﻿@using mrpAccesLibrary
+@using mrpAccesLibrary.Models
+@using mrp.models
+@inject IMusteri _db
+<RadzenCard class="m-3" >
+     <RadzenButton Icon="add_circle_outline" style="margin-bottom: 10px;width:10%"  Click="@InsertRow" Disabled=@(orderToInsert != null) />
+<div class="d-flex flex-row" style="height:400px;" >
+<RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Simple" AllowSorting="true" PageSize="5" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+        Data="@musteri" TItem="mus_iletisim" @ref="ordersGrid" ColumnWidth="10%" LogicalFilterOperator="LogicalFilterOperator.And" EditMode="DataGridEditMode.Single">
+     <Columns>
+        <RadzenDataGridColumn Context="order" TItem="mus_iletisim" Visible="false" Property="musteri_iletisimid" Filterable="false" Title="ID" Frozen="true" Width="%10" TextAlign="TextAlign.Center" />  
+        
+        <RadzenDataGridColumn  TItem="mus_iletisim"  Property="iletesim_tip_adi" Filterable="true" Title="İletişim Yöntemi" TextAlign="TextAlign.Center" >  
+          <EditTemplate Context="order">
+                <RadzenDropDown  AllowClear="true" TValue="int" Class="w-500" 
+                               @bind-Value="order.iletesim_tipid" Data="tip"
+                                TextProperty="iletesim_tip_adi" ValueProperty="iletesim_tipid" Style="width:200px"  />
+            </EditTemplate>    
+            </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="mus_iletisim"  Property="iletisim_bilgi" Filterable="true" Title="Değeri"  TextAlign="TextAlign.Center" >  
+        <EditTemplate Context="order">
+              <RadzenTextBox Name="txturunkodu" @bind-Value="order.iletisim_bilgi" Class="w-100"  />
+        </EditTemplate>
+        </RadzenDataGridColumn>        
+        
+        <RadzenDataGridColumn TItem="mus_iletisim" Context="sampleBlazorModelsSampleOrder" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" >
+                <Template Context="order">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditRow(order))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="order">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@((args) => SaveRow(order))">
+                    </RadzenButton>
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@((args) => CancelEdit(order))">
+                    </RadzenButton>
+                </EditTemplate>
+          </RadzenDataGridColumn>
+     </Columns>
+     
+     </RadzenDataGrid>
+ </div>
+ </RadzenCard>
+@code {
+    [Parameter]
+    public int musid { get; set; }
+    List<mus_iletisim> musteri;
+    RadzenDataGrid<mus_iletisim> ordersGrid;
+    List<mus_iletisim> tip;
+    mus_iletisim orderToInsert;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        musteri = await _db.ilet_getir(musid);
+        tip = await _db.tip_getir();
+
+    }
+    async Task EditRow(mus_iletisim order)
+    {
+        await ordersGrid.EditRow(order);
+
+    }
+    async Task SaveRow( mus_iletisim order)
+    {
+        if (order == orderToInsert)
+        {
+            order.musid = musid;
+            await _db.mus_ilet_kaydet(order);
+
+        }
+        else
+        {
+            order.musid = musid;
+           await _db.mus_ilet_guncelle(order, order.musteri_iletisimid);
+            
+             
+        }
+        orderToInsert = null;
+        musteri = await _db.ilet_getir(musid);
+        ordersGrid.CancelEditRow(order);
+            
+    }
+     async Task CancelEdit(mus_iletisim order)
+    {
+         if (order == orderToInsert)
+        {
+            orderToInsert = null;
+        }
+       
+
+        ordersGrid.CancelEditRow(order);
+          musteri = await _db.ilet_getir(musid);
+    }
+      async Task InsertRow()
+    {
+        orderToInsert = new mus_iletisim();
+        await ordersGrid.InsertRow(orderToInsert);
+    }
+
+}

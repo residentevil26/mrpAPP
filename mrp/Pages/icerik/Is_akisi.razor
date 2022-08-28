@@ -1,0 +1,148 @@
+﻿@using mrpAccesLibrary
+@using mrpAccesLibrary.Models
+@inject IUrun_is_akisi_data _dbt
+<RadzenCard class="m-3" >
+    <h3 class="h5">İş Akışı</h3>
+    <RadzenButton Icon="add_circle_outline" style="margin-bottom: 10px;width:10%"  Click="@InsertRow" Disabled=@(orderToInsert != null) />
+    
+    <div class="d-flex flex-row">
+       <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Simple" AllowSorting="true" PageSize="5" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+        Data="@tedarikci" @ref="ordersGrid" TItem="urun_is_akisi" ColumnWidth="%10" LogicalFilterOperator="LogicalFilterOperator.And"  
+        SelectionMode="DataGridSelectionMode.Single" >
+           
+        <Columns>
+            <RadzenDataGridColumn TItem="urun_is_akisi" Visible="false" Property="urun_processid" Filterable="false" Title="ID" Frozen="true" Width="%10" TextAlign="TextAlign.Center" Context="order"/>
+            <RadzenDataGridColumn TItem="urun_is_akisi" Property="process_adi" Title="İşlem Adı" Sortable="true" Filterable="true"  >
+               <EditTemplate Context="order">
+                <RadzenDropDown  AllowClear="true" TValue="int" Class="w-500" 
+                               @bind-Value="order.processid" Data= "process"
+                                TextProperty="process_adi" ValueProperty="processid" Disabled=@disabled Style="width:200px" >
+                              
+                                </RadzenDropDown>
+            </EditTemplate> 
+              </RadzenDataGridColumn>
+            
+            <RadzenDataGridColumn TItem="urun_is_akisi" Property="urun_ozellik_adi" Title="Özellik Adı"   Sortable="true" Filterable="true"  >
+                <EditTemplate Context="order">
+                <RadzenDropDown  AllowClear="true" TValue="int" Class="w-500" 
+                               @bind-Value="order.kart_ozid" Data= "ozellik"
+                                TextProperty="urun_ozellik_adi" ValueProperty="kart_ozid" Disabled=@disabled Style="width:200px" >
+                               
+                                </RadzenDropDown>
+            </EditTemplate> 
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="urun_is_akisi" Property="urun_kart_ozellik_deger" Title="Degeri"   Sortable="true" Filterable="true"  />
+              <RadzenDataGridColumn TItem="urun_is_akisi" Property="process_bolum_adi" Title="Bölüm Adı" Sortable="true" Filterable="true"  >
+                 <EditTemplate Context="order">
+                <RadzenDropDown  AllowClear="true" TValue="int" Class="w-500" 
+                               @bind-Value="order.process_bolumid" Data= "bolum"
+                                TextProperty="process_bolum_adi" ValueProperty="process_bolumid" Style="width:200px" >
+                               
+                                </RadzenDropDown>
+            </EditTemplate> 
+              </RadzenDataGridColumn>
+              <RadzenDataGridColumn TItem="urun_is_akisi" Property="olcum_cihaz_adi" Title="Ölçüm Cihazı" Sortable="true" Filterable="true"  >
+                  <EditTemplate Context="order">
+                <RadzenDropDown  AllowClear="true" TValue="int" Class="w-500" 
+                               @bind-Value="order.olcum_cihazid" Data= "cihaz"
+                                TextProperty="olcum_cihaz_adi" ValueProperty="olcum_cihazid" Style="width:200px" >
+                               
+                                </RadzenDropDown>
+            </EditTemplate> 
+              </RadzenDataGridColumn>
+             <RadzenDataGridColumn TItem="urun_is_akisi" Property="process_yer_adi" Title="Yer Adı" Sortable="true" Filterable="true">
+                 <EditTemplate Context="order">
+                <RadzenDropDown  AllowClear="true" TValue="int" Class="w-500" 
+                               @bind-Value="order.process_yerid" Data= "yer"
+                                TextProperty="process_yer_adi" ValueProperty="process_yerid"Style="width:200px"  >
+                               
+                                </RadzenDropDown>
+            </EditTemplate> 
+              </RadzenDataGridColumn>
+              <RadzenDataGridColumn TItem="urun_is_akisi" Context="sampleBlazorModelsSampleOrder" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="24%">
+                <Template Context="order">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditRow(order))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="order">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary"  Click="@((args) => SaveRow(order))">
+                    </RadzenButton>
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light"  Click="@((args) => CancelEdit(order))">
+                    </RadzenButton>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+                 
+        </Columns>
+    </RadzenDataGrid>
+
+    </div>
+    
+</RadzenCard>
+
+@code {
+    private List<urun_is_akisi> bolum;
+    private List<urun_is_akisi> cihaz;
+    private List<urun_is_akisi> yer;
+    private List<urun_is_akisi> ozellik;
+    private List<urun_is_akisi> process;
+
+    private List<urun_is_akisi> tedarikci;
+    bool disabled = true;
+    RadzenDataGrid<urun_is_akisi> ordersGrid;
+    urun_is_akisi orderToInsert;
+    [Parameter]
+    public int urunid { get; set; } = 1;
+    void Change(string text)
+    {
+
+    }
+    string emptyText = "No Items to display!";
+    protected override async Task OnInitializedAsync() 
+    {
+
+        tedarikci = await _dbt.urun_is_akisi_getir(urunid);
+        bolum = await _dbt.bolum_getir();
+        cihaz = await _dbt.olcum_cihaz_getir();
+        yer = await _dbt.yer_getir();
+        ozellik = await _dbt.ozellik_getir(urunid);
+        process = await _dbt.process_getir();
+
+    }
+    async Task EditRow(urun_is_akisi order)
+    {
+        disabled = true;
+        await ordersGrid.EditRow(order);
+
+
+    }
+    async Task SaveRow(urun_is_akisi order)
+    {
+        if (order == orderToInsert)
+        {
+            await _dbt.akis_kaydet(orderToInsert);
+            orderToInsert = null;
+        }
+        else
+        {
+            await _dbt.akis_guncelle(order);
+            
+        }
+        tedarikci = await _dbt.urun_is_akisi_getir(urunid);
+    }
+    async Task CancelEdit(urun_is_akisi order)
+    {
+        if (order == orderToInsert)
+        {
+            orderToInsert = null;
+        }
+        tedarikci = await _dbt.urun_is_akisi_getir(urunid);
+    }
+    async Task InsertRow()
+    {
+        disabled = false;
+        orderToInsert = new urun_is_akisi();
+        await ordersGrid.InsertRow(orderToInsert);
+    }
+
+}
+
